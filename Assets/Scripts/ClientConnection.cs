@@ -1,8 +1,7 @@
 using Unity.Netcode;
 using UnityEngine;
 
-public class ClientConnection : SingletonNetwork<ClientConnection>
-{
+public class ClientConnection : SingletonNetwork<ClientConnection>{
     [SerializeField]
     private int m_maxConnections;
 
@@ -11,21 +10,18 @@ public class ClientConnection : SingletonNetwork<ClientConnection>
 
     // This is a check for some script that depends on the client where it leaves
     // to check if this was a client that should no be allowed an there for the code should not run
-    public bool IsExtraClient(ulong clientId)
-    {
+    public bool IsExtraClient(ulong clientId){
         return CanConnect(clientId);
     }
 
     // Check if a client can connect to the scene, this is call on every load of a scene.
-    public bool CanClientConnect(ulong clientId)
-    {
+    public bool CanClientConnect(ulong clientId){
         if (!IsServer)
             return false;
 
         // Check if the client can connect
         bool canConnect = CanConnect(clientId);
-        if (!canConnect)
-        {
+        if (!canConnect){
             RemoveClient(clientId);
         }
 
@@ -36,14 +32,11 @@ public class ClientConnection : SingletonNetwork<ClientConnection>
     // 1. On the selection screen, always check the network manager for the numbers of clients connected
     // 2. When the game starts after the character selection a new client should never be allowed to enter
     //    so we check the data of the characters because there we now witch character is selected and by who
-    private bool CanConnect(ulong clientId)
-    {
-        if (LoadingSceneManager.Instance.SceneActive == SceneName.CharacterSelection)
-        {
+    private bool CanConnect(ulong clientId){
+        if (LoadingSceneManager.Instance.SceneActive == SceneName.CharacterSelection){
             int playersConnected = NetworkManager.Singleton.ConnectedClientsList.Count;
 
-            if (playersConnected > m_maxConnections)
-            {
+            if (playersConnected > m_maxConnections){
                 print($"Sorry we are full {clientId}");
                 return false;
             }
@@ -51,15 +44,12 @@ public class ClientConnection : SingletonNetwork<ClientConnection>
             print($"You are allowed to enter {clientId}");
             return true;
         }
-        else
-        {
-            if (ItHasACharacterSelected(clientId))
-            {
+        else{
+            if (ItHasACharacterSelected(clientId)){
                 print($"You are allowed to enter {clientId}");
                 return true;
             }
-            else
-            {
+            else{
                 print($"Sorry we are full {clientId}");
                 return false;
             }
@@ -67,14 +57,11 @@ public class ClientConnection : SingletonNetwork<ClientConnection>
     }
 
     // In case the client is not allowed to enter, remove the client for the session
-    private void RemoveClient(ulong clientId)
-    {
+    private void RemoveClient(ulong clientId){
         // Client should shutdown
-        ClientRpcParams clientRpcParams = new ClientRpcParams
-        {
-            Send = new ClientRpcSendParams
-            {
-                TargetClientIds = new ulong[] { clientId }
+        ClientRpcParams clientRpcParams = new ClientRpcParams{
+            Send = new ClientRpcSendParams{
+                TargetClientIds = new ulong[]{ clientId }
             }
         };
 
@@ -83,12 +70,9 @@ public class ClientConnection : SingletonNetwork<ClientConnection>
     }
 
     // Check if the client exist on the characters data
-    private bool ItHasACharacterSelected(ulong clientId)
-    {
-        foreach (var data in m_characterDatas)
-        {
-            if (data.clientId == clientId)
-            {
+    private bool ItHasACharacterSelected(ulong clientId){
+        foreach (var data in m_characterDatas){
+            if (data.clientId == clientId){
                 return true;
             }
         }
@@ -97,13 +81,11 @@ public class ClientConnection : SingletonNetwork<ClientConnection>
     }
 
     [ClientRpc]
-    private void ShutdownClientRpc(ClientRpcParams clientRpcParams = default)
-    {        
+    private void ShutdownClientRpc(ClientRpcParams clientRpcParams = default){
         Shutdown();
     }
 
-    private void Shutdown()
-    {
+    private void Shutdown(){
         NetworkManager.Singleton.Shutdown();
         LoadingSceneManager.Instance.LoadScene(SceneName.Menu, false);
     }
