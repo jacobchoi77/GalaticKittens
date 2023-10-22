@@ -2,52 +2,34 @@ using System;
 using UnityEngine;
 using Unity.Netcode;
 
-public class PlayerShipMovement : NetworkBehaviour
-{
-    enum MoveType
-    { 
+public class PlayerShipMovement : NetworkBehaviour{
+    enum MoveType{
         constant,
         momentum
     }
 
-    enum VerticalMovementType
-    {
+    enum VerticalMovementType{
         none,
         upward,
         downward
     }
 
     [Serializable]
-    public struct PlayerLimits
-    {
+    public struct PlayerLimits{
         public float minLimit;
         public float maxLimit;
     }
 
-    [SerializeField]
-    MoveType m_moveType = MoveType.momentum;
-
-    [SerializeField]
-    PlayerLimits m_verticalLimits;
-
-    [SerializeField]
-    PlayerLimits m_hortizontalLimits;
+    [SerializeField] MoveType m_moveType = MoveType.momentum;
+    [SerializeField] PlayerLimits m_verticalLimits;
+    [SerializeField] PlayerLimits m_hortizontalLimits;
 
     [Header("ShipSprites")]
-    [SerializeField]
-    SpriteRenderer m_shipRenderer;
-
-    [SerializeField]
-    Sprite m_normalSprite;
-
-    [SerializeField]
-    Sprite m_upSprite;
-
-    [SerializeField]
-    Sprite m_downSprite;
-
-    [SerializeField]
-    private float m_speed;
+    [SerializeField] SpriteRenderer m_shipRenderer;
+    [SerializeField] Sprite m_normalSprite;
+    [SerializeField] Sprite m_upSprite;
+    [SerializeField] Sprite m_downSprite;
+    [SerializeField] private float m_speed;
 
     private float m_inputX;
     private float m_inputY;
@@ -59,8 +41,7 @@ public class PlayerShipMovement : NetworkBehaviour
     const string k_verticalAxis = "Vertical";
 
     // Update is called once per frame
-    void Update()
-    {
+    void Update(){
         // We're only updating the ship's movements when we're surely updating on the owning
         // instance
         if (!IsOwner)
@@ -75,8 +56,7 @@ public class PlayerShipMovement : NetworkBehaviour
         MovePlayerShip();
     }
 
-    private void HandleKeyboardInput()
-    {
+    private void HandleKeyboardInput(){
         /*
             There two types of movement:
             constant -> linear move, there are no time acceleration
@@ -84,99 +64,84 @@ public class PlayerShipMovement : NetworkBehaviour
 
             Note: feel free to add your own type as well
         */
-        if (m_moveType == MoveType.constant)
-        {
+        if (m_moveType == MoveType.constant){
             HandleMoveTypeConstant();
         }
-        else if (m_moveType == MoveType.momentum)
-        {
+        else if (m_moveType == MoveType.momentum){
             HandleMoveTypeMomentum();
         }
     }
 
-    private void HandleMoveTypeConstant()
-    {
+    private void HandleMoveTypeConstant(){
         m_inputX = 0f;
         m_inputY = 0f;
 
         // Horizontal input
-        if (Input.GetKey(KeyCode.D))
-        {
+        if (Input.GetKey(KeyCode.D)){
             m_inputX = 1f;
         }
-        else if (Input.GetKey(KeyCode.A))
-        {
+        else if (Input.GetKey(KeyCode.A)){
             m_inputX = -1f;
         }
 
         // Vertical input and set the ship sprite
-        if (Input.GetKey(KeyCode.W))
-        {
+        if (Input.GetKey(KeyCode.W)){
             m_inputY = 1f;
         }
-        else if (Input.GetKey(KeyCode.S))
-        {
+        else if (Input.GetKey(KeyCode.S)){
             m_inputY = -1f;
         }
     }
 
-    private void HandleMoveTypeMomentum()
-    {
+    private void HandleMoveTypeMomentum(){
         m_inputX = Input.GetAxis(k_horizontalAxis);
         m_inputY = Input.GetAxis(k_verticalAxis);
     }
 
-    private void UpdateVerticalMovementSprite()
-    {
+    private void UpdateVerticalMovementSprite(){
         m_previousVerticalMovementType = m_currentVerticalMovementType;
 
         UpdateCurrentVerticalMovementType();
 
-        if (m_currentVerticalMovementType != m_previousVerticalMovementType)
-        {
+        if (m_currentVerticalMovementType != m_previousVerticalMovementType){
             // inform the server of the update to vertical movement type
             NewVerticalMovementServerRPC(m_currentVerticalMovementType);
         }
     }
 
-    private void UpdateCurrentVerticalMovementType()
-    {
+    private void UpdateCurrentVerticalMovementType(){
         // Change the ship sprites base on the input value
-        if (m_inputY > 0f)
-        {
+        if (m_inputY > 0f){
             m_shipRenderer.sprite = m_upSprite;
             m_currentVerticalMovementType = VerticalMovementType.upward;
         }
-        else if (m_inputY < 0f)
-        {
+        else if (m_inputY < 0f){
             m_shipRenderer.sprite = m_downSprite;
             m_currentVerticalMovementType = VerticalMovementType.downward;
         }
-        else
-        {
+        else{
             m_shipRenderer.sprite = m_normalSprite;
             m_currentVerticalMovementType = VerticalMovementType.none;
         }
     }
 
     [ServerRpc]
-    private void NewVerticalMovementServerRPC(VerticalMovementType newVerticalMovementType)
-    {
+    private void NewVerticalMovementServerRPC(VerticalMovementType newVerticalMovementType){
         // The server lets all other clients of this ship's new vertical movement
         NewVerticalMovementClientRPC(newVerticalMovementType);
     }
 
     [ClientRpc]
-    private void NewVerticalMovementClientRPC(VerticalMovementType newVerticalMovementType)
-    {
-        switch (newVerticalMovementType)
-        {
+    private void NewVerticalMovementClientRPC(VerticalMovementType newVerticalMovementType){
+        switch (newVerticalMovementType){
             case VerticalMovementType.none:
                 m_shipRenderer.sprite = m_normalSprite;
                 break;
+
             case VerticalMovementType.upward:
                 m_shipRenderer.sprite = m_upSprite;
                 break;
+
             case VerticalMovementType.downward:
                 m_shipRenderer.sprite = m_downSprite;
                 break;
@@ -184,8 +149,7 @@ public class PlayerShipMovement : NetworkBehaviour
     }
 
     // Check the limits of the player and adjust the input
-    private void AdjustInputValuesBasedOnPositionLimits()
-    {
+    private void AdjustInputValuesBasedOnPositionLimits(){
         PlayerMovementInputLimitAdjuster.AdjustInputValuesBasedOnPositionLimits(
             transform.position,
             ref m_inputX,
@@ -195,8 +159,7 @@ public class PlayerShipMovement : NetworkBehaviour
         );
     }
 
-    private void MovePlayerShip()
-    {
+    private void MovePlayerShip(){
         // Take the value from the input and multiply by speed and time
         float speedTimesDeltaTime = m_speed * Time.deltaTime;
 
