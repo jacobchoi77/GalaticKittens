@@ -1,14 +1,12 @@
 using System.Collections;
 using UnityEngine;
 
-public class BossIdleState : BaseBossState
-{
+public class BossIdleState : BaseBossState{
     [SerializeField]
     [Range(0.1f, 2f)]
-    float m_idleTime;
+    private float m_idleTime;
 
-    IEnumerator RunIdleState()
-    {
+    private IEnumerator RunIdleState(){
         // Wait for a moment
         yield return new WaitForSeconds(m_idleTime);
 
@@ -16,8 +14,7 @@ public class BossIdleState : BaseBossState
         m_controller.SetState(BossState.fire);
     }
 
-    public override void RunState()
-    {
+    override public void RunState(){
         StartCoroutine(RunIdleState());
     }
 }

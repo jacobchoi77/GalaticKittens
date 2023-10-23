@@ -6,24 +6,21 @@ using UnityEngine.UI;
     Script to do the fade effect on loading scenes
 */
 
-public class LoadingFadeEffect : SingletonPersistent<LoadingFadeEffect>
-{    
-    public static bool s_canLoad;       // boolean to determinate when the actual loading can happen
+public class LoadingFadeEffect : SingletonPersistent<LoadingFadeEffect>{
+    public static bool s_canLoad; // boolean to determinate when the actual loading can happen
 
-    [SerializeField]
-    Image m_loadingBackground;          // The background image to change alpha for effect
-
-    [SerializeField]
-    [Range(0f, 0.5f)]
-    float m_loadingStepTime;            // A range of time to wait for every repetition on the effect
+    [SerializeField] private Image m_loadingBackground; // The background image to change alpha for effect
 
     [SerializeField]
     [Range(0f, 0.5f)]
-    float m_loadingStepValue;           // The value to modify the alpha every steo time
+    private float m_loadingStepTime; // A range of time to wait for every repetition on the effect
+
+    [SerializeField]
+    [Range(0f, 0.5f)]
+    private float m_loadingStepValue; // The value to modify the alpha every steo time
 
     // Run the complete effect, use for the clients
-    IEnumerator FadeAllEffect()
-    {
+    private IEnumerator FadeAllEffect(){
         // Do the fade in effect 
         yield return StartCoroutine(FadeInEffect());
 
@@ -33,11 +30,10 @@ public class LoadingFadeEffect : SingletonPersistent<LoadingFadeEffect>
         // Do the fadeout effect
         yield return StartCoroutine(FadeOutEffect());
     }
-        
-    IEnumerator FadeInEffect()
-    {
+
+    private IEnumerator FadeInEffect(){
         // Get the background color
-        Color backgroundColor = m_loadingBackground.color;
+        var backgroundColor = m_loadingBackground.color;
 
         // Set the background  color alpha to 0
         backgroundColor.a = 0;
@@ -47,10 +43,9 @@ public class LoadingFadeEffect : SingletonPersistent<LoadingFadeEffect>
 
         // Turn on the background
         m_loadingBackground.gameObject.SetActive(true);
-        
+
         // Repeat until the alpha is <= to 1
-        while (backgroundColor.a <= 1)
-        {
+        while (backgroundColor.a <= 1){
             // Wait 
             yield return new WaitForSeconds(m_loadingStepTime);
 
@@ -65,17 +60,15 @@ public class LoadingFadeEffect : SingletonPersistent<LoadingFadeEffect>
         s_canLoad = true;
     }
 
-    IEnumerator FadeOutEffect()
-    {
+    private IEnumerator FadeOutEffect(){
         // Set the loading to false, it should be already load the new scene
         s_canLoad = false;
 
         // Get the background image color
-        Color backgroundColor = m_loadingBackground.color;
+        var backgroundColor = m_loadingBackground.color;
 
         // Repeat until the alpha is >= 0
-        while (backgroundColor.a >= 0)
-        {
+        while (backgroundColor.a >= 0){
             // Wait
             yield return new WaitForSeconds(m_loadingStepTime);
 
@@ -91,20 +84,17 @@ public class LoadingFadeEffect : SingletonPersistent<LoadingFadeEffect>
     }
 
     // Start the fade-in effect
-    public void FadeIn()
-    {
+    public void FadeIn(){
         StartCoroutine(FadeInEffect());
     }
 
     // Start the fadeout effect
-    public void FadeOut()
-    {
+    public void FadeOut(){
         StartCoroutine(FadeOutEffect());
     }
 
     // Start a complete fade effect
-    public void FadeAll()
-    {
+    public void FadeAll(){
         StartCoroutine(FadeAllEffect());
     }
 

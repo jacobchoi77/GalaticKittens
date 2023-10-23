@@ -1,20 +1,14 @@
 using Unity.Netcode;
 using UnityEngine;
 
-public class CircularBullet : NetworkBehaviour
-{
-    [SerializeField]
-    private GameObject _smallBulletPrefab;
+public class CircularBullet : NetworkBehaviour{
 
-    [SerializeField]
-    private Transform[] _firePositions;
+    [SerializeField] private GameObject _smallBulletPrefab;
+    [SerializeField] private Transform[] _firePositions;
 
-    private void SpawnBullets()
-    {
-        // Spawn the bullets
-        foreach (Transform firePosition in _firePositions)
-        {
-            GameObject go = Instantiate(
+    private void SpawnBullets(){
+        foreach (var firePosition in _firePositions){
+            var go = Instantiate(
                 _smallBulletPrefab,
                 firePosition.position,
                 firePosition.rotation);
@@ -22,19 +16,12 @@ public class CircularBullet : NetworkBehaviour
             go.GetComponent<NetworkObject>().Spawn();
         }
 
-        // De-spawn me
         NetworkObjectDespawner.DespawnNetworkObject(NetworkObject);
     }
 
-    public override void OnNetworkSpawn()
-    {
-        if (!IsServer)
-            return;
-
-        // After a random time amount, blow up and spawn small bullets
-        float randomSpawn = Random.Range(1.5f, 3f);
+    override public void OnNetworkSpawn(){
+        if (!IsServer) return;
+        var randomSpawn = Random.Range(1.5f, 3f);
         Invoke(nameof(SpawnBullets), randomSpawn);
-
-        base.OnNetworkSpawn();
     }
 }

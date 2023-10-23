@@ -3,15 +3,15 @@ using UnityEngine;
 using Unity.Netcode;
 
 public class PlayerShipMovement : NetworkBehaviour{
-    enum MoveType{
-        constant,
-        momentum
+    private enum MoveType{
+        Constant,
+        Momentum
     }
 
-    enum VerticalMovementType{
-        none,
-        upward,
-        downward
+    private enum VerticalMovementType{
+        None,
+        Upward,
+        Downward
     }
 
     [Serializable]
@@ -20,28 +20,28 @@ public class PlayerShipMovement : NetworkBehaviour{
         public float maxLimit;
     }
 
-    [SerializeField] MoveType m_moveType = MoveType.momentum;
-    [SerializeField] PlayerLimits m_verticalLimits;
-    [SerializeField] PlayerLimits m_hortizontalLimits;
+    [SerializeField] private MoveType m_moveType = MoveType.Momentum;
+    [SerializeField] private PlayerLimits m_verticalLimits;
+    [SerializeField] private PlayerLimits m_hortizontalLimits;
 
     [Header("ShipSprites")]
-    [SerializeField] SpriteRenderer m_shipRenderer;
-    [SerializeField] Sprite m_normalSprite;
-    [SerializeField] Sprite m_upSprite;
-    [SerializeField] Sprite m_downSprite;
+    [SerializeField] private SpriteRenderer m_shipRenderer;
+    [SerializeField] private Sprite m_normalSprite;
+    [SerializeField] private Sprite m_upSprite;
+    [SerializeField] private Sprite m_downSprite;
     [SerializeField] private float m_speed;
 
     private float m_inputX;
     private float m_inputY;
 
-    private VerticalMovementType m_previousVerticalMovementType = VerticalMovementType.none;
-    private VerticalMovementType m_currentVerticalMovementType = VerticalMovementType.none;
+    private VerticalMovementType m_previousVerticalMovementType = VerticalMovementType.None;
+    private VerticalMovementType m_currentVerticalMovementType = VerticalMovementType.None;
 
-    const string k_horizontalAxis = "Horizontal";
-    const string k_verticalAxis = "Vertical";
+    private const string k_horizontalAxis = "Horizontal";
+    private const string k_verticalAxis = "Vertical";
 
     // Update is called once per frame
-    void Update(){
+    private void Update(){
         // We're only updating the ship's movements when we're surely updating on the owning
         // instance
         if (!IsOwner)
@@ -57,18 +57,24 @@ public class PlayerShipMovement : NetworkBehaviour{
     }
 
     private void HandleKeyboardInput(){
-        /*
+        switch (m_moveType){
+            /*
             There two types of movement:
             constant -> linear move, there are no time acceleration
             momentum -> move with acceleration at the start
 
             Note: feel free to add your own type as well
         */
-        if (m_moveType == MoveType.constant){
-            HandleMoveTypeConstant();
-        }
-        else if (m_moveType == MoveType.momentum){
-            HandleMoveTypeMomentum();
+            case MoveType.Constant:
+                HandleMoveTypeConstant();
+                break;
+
+            case MoveType.Momentum:
+                HandleMoveTypeMomentum();
+                break;
+
+            default:
+                throw new ArgumentOutOfRangeException();
         }
     }
 
@@ -110,18 +116,22 @@ public class PlayerShipMovement : NetworkBehaviour{
     }
 
     private void UpdateCurrentVerticalMovementType(){
-        // Change the ship sprites base on the input value
-        if (m_inputY > 0f){
-            m_shipRenderer.sprite = m_upSprite;
-            m_currentVerticalMovementType = VerticalMovementType.upward;
-        }
-        else if (m_inputY < 0f){
-            m_shipRenderer.sprite = m_downSprite;
-            m_currentVerticalMovementType = VerticalMovementType.downward;
-        }
-        else{
-            m_shipRenderer.sprite = m_normalSprite;
-            m_currentVerticalMovementType = VerticalMovementType.none;
+        switch (m_inputY){
+            // Change the ship sprites base on the input value
+            case > 0f:
+                m_shipRenderer.sprite = m_upSprite;
+                m_currentVerticalMovementType = VerticalMovementType.Upward;
+                break;
+
+            case < 0f:
+                m_shipRenderer.sprite = m_downSprite;
+                m_currentVerticalMovementType = VerticalMovementType.Downward;
+                break;
+
+            default:
+                m_shipRenderer.sprite = m_normalSprite;
+                m_currentVerticalMovementType = VerticalMovementType.None;
+                break;
         }
     }
 
@@ -133,19 +143,12 @@ public class PlayerShipMovement : NetworkBehaviour{
 
     [ClientRpc]
     private void NewVerticalMovementClientRPC(VerticalMovementType newVerticalMovementType){
-        switch (newVerticalMovementType){
-            case VerticalMovementType.none:
-                m_shipRenderer.sprite = m_normalSprite;
-                break;
-
-            case VerticalMovementType.upward:
-                m_shipRenderer.sprite = m_upSprite;
-                break;
-
-            case VerticalMovementType.downward:
-                m_shipRenderer.sprite = m_downSprite;
-                break;
-        }
+        m_shipRenderer.sprite = newVerticalMovementType switch{
+            VerticalMovementType.None => m_normalSprite,
+            VerticalMovementType.Upward => m_upSprite,
+            VerticalMovementType.Downward => m_downSprite,
+            _ => m_shipRenderer.sprite
+        };
     }
 
     // Check the limits of the player and adjust the input
@@ -161,10 +164,10 @@ public class PlayerShipMovement : NetworkBehaviour{
 
     private void MovePlayerShip(){
         // Take the value from the input and multiply by speed and time
-        float speedTimesDeltaTime = m_speed * Time.deltaTime;
+        var speedTimesDeltaTime = m_speed * Time.deltaTime;
 
-        float newYposition = m_inputY * speedTimesDeltaTime;
-        float newXposition = m_inputX * speedTimesDeltaTime;
+        var newYposition = m_inputY * speedTimesDeltaTime;
+        var newXposition = m_inputX * speedTimesDeltaTime;
 
         // move the ship
         transform.Translate(newXposition, newYposition, 0f);

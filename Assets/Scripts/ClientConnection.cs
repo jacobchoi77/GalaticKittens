@@ -20,7 +20,7 @@ public class ClientConnection : SingletonNetwork<ClientConnection>{
             return false;
 
         // Check if the client can connect
-        bool canConnect = CanConnect(clientId);
+        var canConnect = CanConnect(clientId);
         if (!canConnect){
             RemoveClient(clientId);
         }
@@ -34,7 +34,7 @@ public class ClientConnection : SingletonNetwork<ClientConnection>{
     //    so we check the data of the characters because there we now witch character is selected and by who
     private bool CanConnect(ulong clientId){
         if (LoadingSceneManager.Instance.SceneActive == SceneName.CharacterSelection){
-            int playersConnected = NetworkManager.Singleton.ConnectedClientsList.Count;
+            var playersConnected = NetworkManager.Singleton.ConnectedClientsList.Count;
 
             if (playersConnected > m_maxConnections){
                 print($"Sorry we are full {clientId}");
@@ -59,7 +59,7 @@ public class ClientConnection : SingletonNetwork<ClientConnection>{
     // In case the client is not allowed to enter, remove the client for the session
     private void RemoveClient(ulong clientId){
         // Client should shutdown
-        ClientRpcParams clientRpcParams = new ClientRpcParams{
+        var clientRpcParams = new ClientRpcParams{
             Send = new ClientRpcSendParams{
                 TargetClientIds = new ulong[]{ clientId }
             }

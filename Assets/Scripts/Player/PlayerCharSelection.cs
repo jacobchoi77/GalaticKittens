@@ -2,8 +2,7 @@ using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
 
-public class PlayerCharSelection : NetworkBehaviour
-{
+public class PlayerCharSelection : NetworkBehaviour{
     public int CharSelected => m_charSelected.Value;
 
     private const int k_noCharacterSelectedValue = -1;
@@ -19,14 +18,11 @@ public class PlayerCharSelection : NetworkBehaviour
     [SerializeField]
     private AudioClip _changedCharacterClip;
 
-    private void Start()
-    {
-        if (IsServer)
-        {
+    private void Start(){
+        if (IsServer){
             m_playerId.Value = CharacterSelectionManager.Instance.GetPlayerId(OwnerClientId);
         }
-        else if (!IsOwner && HasAcharacterSelected())
-        {
+        else if (!IsOwner && HasAcharacterSelected()){
             CharacterSelectionManager.Instance.SetPlayebleChar(
                 m_playerId.Value,
                 m_charSelected.Value,
@@ -37,27 +33,23 @@ public class PlayerCharSelection : NetworkBehaviour
         gameObject.name = $"Player{m_playerId.Value + 1}";
     }
 
-    private bool HasAcharacterSelected()
-    {
+    private bool HasAcharacterSelected(){
         return m_playerId.Value != k_noCharacterSelectedValue;
     }
 
-    private void OnEnable()
-    {
+    private void OnEnable(){
         m_playerId.OnValueChanged += OnPlayerIdSet;
         m_charSelected.OnValueChanged += OnCharacterChanged;
         OnButtonPress.a_OnButtonPress += OnUIButtonPress;
     }
 
-    private void OnDisable()
-    {
+    private void OnDisable(){
         m_playerId.OnValueChanged -= OnPlayerIdSet;
         m_charSelected.OnValueChanged -= OnCharacterChanged;
         OnButtonPress.a_OnButtonPress -= OnUIButtonPress;
     }
 
-    private void OnPlayerIdSet(int oldValue, int newValue)
-    {
+    private void OnPlayerIdSet(int oldValue, int newValue){
         CharacterSelectionManager.Instance.SetPlayebleChar(newValue, newValue, IsOwner);
 
         if (IsServer)
@@ -65,49 +57,39 @@ public class PlayerCharSelection : NetworkBehaviour
     }
 
     // Event call when server changes the network variable
-    private void OnCharacterChanged(int oldValue, int newValue)
-    {
+    private void OnCharacterChanged(int oldValue, int newValue){
         // If I am not the owner, update the character selection UI
         if (!IsOwner && HasAcharacterSelected())
             CharacterSelectionManager.Instance.SetCharacterUI(m_playerId.Value, newValue);
     }
 
-    private void Update()
-    {
-        if (IsOwner && CharacterSelectionManager.Instance.GetConnectionState(m_playerId.Value) != ConnectionState.ready)
-        {
-            if (Input.GetKeyDown(KeyCode.A))
-            {
+    private void Update(){
+        if (IsOwner && CharacterSelectionManager.Instance.GetConnectionState(m_playerId.Value) != ConnectionState.ready){
+            if (Input.GetKeyDown(KeyCode.A)){
                 ChangeCharacterSelection(-1);
                 AudioManager.Instance.PlaySoundEffect(_changedCharacterClip);
             }
-            else if (Input.GetKeyDown(KeyCode.D))
-            {
+            else if (Input.GetKeyDown(KeyCode.D)){
                 ChangeCharacterSelection(1);
                 AudioManager.Instance.PlaySoundEffect(_changedCharacterClip);
             }
         }
 
-        if (IsOwner)
-        {
-            if (Input.GetKeyDown(KeyCode.Space))
-            {
-
+        if (IsOwner){
+            if (Input.GetKeyDown(KeyCode.Space)){
                 // Check that the character is not selected
-                if (!CharacterSelectionManager.Instance.IsReady(m_charSelected.Value))
-                {
+                if (!CharacterSelectionManager.Instance.IsReady(m_charSelected.Value)){
                     CharacterSelectionManager.Instance.SetPlayerReadyUIButtons(
                         true,
                         m_charSelected.Value);
 
                     ReadyServerRpc();
                 }
-                else
-                {
+                else{
                     // if selected check if is selected by me
                     if (CharacterSelectionManager.Instance.IsSelectedByPlayer(
-                            m_playerId.Value, m_charSelected.Value))
-                    {
+                            m_playerId.Value,
+                            m_charSelected.Value)){
                         // If it's selected by me, de-select
                         CharacterSelectionManager.Instance.SetPlayerReadyUIButtons(
                             false,
@@ -118,24 +100,21 @@ public class PlayerCharSelection : NetworkBehaviour
                 }
             }
 
-            if (Input.GetKeyDown(KeyCode.Escape))
-            {
+            if (Input.GetKeyDown(KeyCode.Escape)){
                 // exit the network state and return to the menu
                 if (m_playerId.Value == 0) // Host
                 {
                     // All player should shutdown and exit
                     StartCoroutine(HostShutdown());
                 }
-                else
-                {
+                else{
                     Shutdown();
                 }
             }
         }
     }
 
-    IEnumerator HostShutdown()
-    {
+    private IEnumerator HostShutdown(){
         // Tell the clients to shutdown
         ShutdownClientRpc();
 
@@ -146,34 +125,30 @@ public class PlayerCharSelection : NetworkBehaviour
         Shutdown();
     }
 
-    void Shutdown()
-    {
+    private void Shutdown(){
         NetworkManager.Singleton.Shutdown();
         LoadingSceneManager.Instance.LoadScene(SceneName.Menu, false);
     }
 
     [ClientRpc]
-    void ShutdownClientRpc()
-    {
+    private void ShutdownClientRpc(){
         if (IsServer)
             return;
 
         Shutdown();
     }
 
-    private void ChangeCharacterSelection(int value)
-    {
+    private void ChangeCharacterSelection(int value){
         // Assign a temp value to prevent the call of onchange event in the charSelected
-        int charTemp = m_charSelected.Value;
+        var charTemp = m_charSelected.Value;
         charTemp += value;
-        
+
         if (charTemp >= CharacterSelectionManager.Instance.charactersData.Length)
             charTemp = 0;
         else if (charTemp < 0)
             charTemp = CharacterSelectionManager.Instance.charactersData.Length - 1;
 
-        if (IsOwner)
-        {
+        if (IsOwner){
             // Notify server of the change
             ChangeCharacterSelectionServerRpc(charTemp);
 
@@ -186,14 +161,12 @@ public class PlayerCharSelection : NetworkBehaviour
     }
 
     [ServerRpc]
-    private void ChangeCharacterSelectionServerRpc(int newValue)
-    {
+    private void ChangeCharacterSelectionServerRpc(int newValue){
         m_charSelected.Value = newValue;
     }
 
     [ServerRpc]
-    private void ReadyServerRpc()
-    {
+    private void ReadyServerRpc(){
         CharacterSelectionManager.Instance.PlayerReady(
             OwnerClientId,
             m_playerId.Value,
@@ -201,19 +174,16 @@ public class PlayerCharSelection : NetworkBehaviour
     }
 
     [ServerRpc]
-    private void NotReadyServerRpc()
-    {
+    private void NotReadyServerRpc(){
         CharacterSelectionManager.Instance.PlayerNotReady(OwnerClientId, m_charSelected.Value);
     }
 
     // The arrows on the player are not meant to works as buttons
-    private void OnUIButtonPress(ButtonActions buttonAction)
-    {
+    private void OnUIButtonPress(ButtonActions buttonAction){
         if (!IsOwner)
             return;
 
-        switch (buttonAction)
-        {
+        switch (buttonAction){
             case ButtonActions.lobby_ready:
                 CharacterSelectionManager.Instance.SetPlayerReadyUIButtons(
                     true,
@@ -232,8 +202,7 @@ public class PlayerCharSelection : NetworkBehaviour
         }
     }
 
-    public void Despawn()
-    {
+    public void Despawn(){
         NetworkObjectDespawner.DespawnNetworkObject(NetworkObject);
     }
 }

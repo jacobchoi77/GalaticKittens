@@ -1,8 +1,7 @@
 using Unity.Netcode;
 using UnityEngine;
 
-public enum BossState
-{ 
+public enum BossState{
     fire,
     misileBarrage,
     death,
@@ -11,20 +10,16 @@ public enum BossState
 };
 
 [RequireComponent(typeof(BossController))]
-public class BaseBossState : NetworkBehaviour
-{
+public class BaseBossState : NetworkBehaviour{
     protected BossController m_controller;
 
-    private void Start()
-    {
+    private void Start(){
         m_controller = FindObjectOfType<BossController>();
     }
-    
-    // Method that should be run on all states
-    public virtual void RunState() { }
-    
-    public virtual void StopState() 
-    {
+
+    public virtual void RunState(){ }
+
+    public virtual void StopState(){
         StopAllCoroutines();
     }
 }

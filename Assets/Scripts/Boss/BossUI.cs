@@ -7,22 +7,23 @@ using UnityEngine.UI;
     set by boss controller when spawn
 */
 
-public class BossUI : NetworkBehaviour
-{
-    [SerializeField]
-    Slider m_healthSlider;
+public class BossUI : NetworkBehaviour{
+    [SerializeField] private Slider m_healthSlider;
+    [SerializeField] private Image m_healthImage;
+    [SerializeField] private HealthColor m_healthColor;
 
-    [SerializeField]
-    Image m_healthImage;
+    private int maxHealth;
 
-    [SerializeField]
-    HealthColor m_healthColor;
-
-    int maxHealth;
+    public void SetHealth(int health){
+        if (!IsServer) return;
+        maxHealth = health;
+        m_healthImage.color = m_healthColor.normalColor;
+        gameObject.SetActive(true);
+        SetHealthClientRpc(health);
+    }
 
     [ClientRpc]
-    private void SetHealthClientRpc(int health)
-    {
+    private void SetHealthClientRpc(int health){
         if (IsServer)
             return;
 
@@ -31,9 +32,19 @@ public class BossUI : NetworkBehaviour
         gameObject.SetActive(true);
     }
 
+    public void UpdateUI(int currentHealth){
+        if (!IsServer)
+            return;
+
+        var convertedHealth = (float)currentHealth / maxHealth;
+        m_healthSlider.value = convertedHealth;
+        m_healthImage.color = m_healthColor.GetHealthColor(convertedHealth);
+
+        UpdateUIClientRpc(convertedHealth);
+    }
+
     [ClientRpc]
-    private void UpdateUIClientRpc(float currentHealth)
-    {
+    private void UpdateUIClientRpc(float currentHealth){
         if (IsServer)
             return;
 
@@ -41,33 +52,7 @@ public class BossUI : NetworkBehaviour
         m_healthImage.color = m_healthColor.GetHealthColor(currentHealth);
     }
 
-    public void SetHealth(int health)
-    {
-        if (!IsServer)
-            return;
-        
-        maxHealth = health;
-        m_healthImage.color = m_healthColor.normalColor;
-        gameObject.SetActive(true);
-        SetHealthClientRpc(health);
-    }
-
-    public void UpdateUI(int currentHealth)
-    {
-        if (!IsServer)
-            return;
-        
-        float convertedHealth = (float)currentHealth / maxHealth;
-        m_healthSlider.value = convertedHealth;
-        m_healthImage.color = m_healthColor.GetHealthColor(convertedHealth);
-
-        UpdateUIClientRpc(convertedHealth);
-    }
-
-    public override void OnNetworkSpawn()
-    {
+    override public void OnNetworkSpawn(){
         gameObject.SetActive(false);
-
-        base.OnNetworkSpawn();
     }
 }

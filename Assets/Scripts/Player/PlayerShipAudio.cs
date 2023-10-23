@@ -6,18 +6,15 @@ using System;
 // No longer in use, because now we use the audio manager for sfx that plays for a moment
 
 [Serializable]
-struct PlayerAudioClip
-{
+internal struct PlayerAudioClip{
     public PlayerShipAudio.PlayerClip playerClip;
     public AudioClip clip;
 }
 
 
 [RequireComponent(typeof(AudioSource))]
-public class PlayerShipAudio : NetworkBehaviour
-{
-    public enum PlayerClip
-    {
+public class PlayerShipAudio : NetworkBehaviour{
+    public enum PlayerClip{
         hit,
         shield,
         shoot,
@@ -27,21 +24,17 @@ public class PlayerShipAudio : NetworkBehaviour
     private PlayerAudioClip[] _playerClips;
     private AudioSource _source;
 
-    void Start()
-    {
+    private void Start(){
         _source = GetComponent<AudioSource>();
     }
 
-    public void Play(PlayerClip playerClip)
-    {
-        AudioClip clip = GetAudioClip(playerClip);
+    public void Play(PlayerClip playerClip){
+        var clip = GetAudioClip(playerClip);
         _source.PlayOneShot(clip);
     }
 
-    private AudioClip GetAudioClip(PlayerClip playerClip)
-    {
-        foreach(PlayerAudioClip clip in _playerClips)
-        {
+    private AudioClip GetAudioClip(PlayerClip playerClip){
+        foreach (var clip in _playerClips){
             if (clip.playerClip == playerClip)
                 return clip.clip;
         }

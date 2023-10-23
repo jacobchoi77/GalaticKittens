@@ -2,10 +2,8 @@ using UnityEngine;
 using Unity.Netcode;
 using System.Collections;
 
-public class BaseEnemyBehavior : NetworkBehaviour, IDamagable
-{
-    protected enum EnemyMovementType
-    {
+public class BaseEnemyBehavior : NetworkBehaviour, IDamagable{
+    protected enum EnemyMovementType{
         linear,
         sineWave,
 
@@ -14,8 +12,7 @@ public class BaseEnemyBehavior : NetworkBehaviour, IDamagable
         COUNT //MAX - used to get random value
     }
 
-    protected enum EnemyState : byte
-    {
+    protected enum EnemyState : byte{
         active,
         defeatAnimation,
         defeated
@@ -50,8 +47,7 @@ public class BaseEnemyBehavior : NetworkBehaviour, IDamagable
     [SerializeField]
     private float m_hitEffectDuration;
 
-    public override void OnNetworkSpawn()
-    {
+    override public void OnNetworkSpawn(){
         m_WaveAmplitude = Random.Range(2f, 6f);
 
         m_EnemyMovementType = GetRandomEnemyMovementType();
@@ -59,14 +55,11 @@ public class BaseEnemyBehavior : NetworkBehaviour, IDamagable
         base.OnNetworkSpawn();
     }
 
-    protected virtual void Update()
-    {
-        if (m_EnemyState.Value == EnemyState.active)
-        {
+    protected virtual void Update(){
+        if (m_EnemyState.Value == EnemyState.active){
             UpdateActive();
         }
-        else if (m_EnemyState.Value == EnemyState.defeatAnimation)
-        {
+        else if (m_EnemyState.Value == EnemyState.defeatAnimation){
             UpdateDefeatedAnimation();
         }
         else // (m_EnemyState.Value == EnemyState.defeated)
@@ -75,18 +68,14 @@ public class BaseEnemyBehavior : NetworkBehaviour, IDamagable
         }
     }
 
-    protected virtual void UpdateActive()
-    {
+    protected virtual void UpdateActive(){
     }
 
-    protected virtual void UpdateDefeatedAnimation()
-    {
+    protected virtual void UpdateDefeatedAnimation(){
     }
 
-    protected virtual void MoveEnemy()
-    {
-        if (m_EnemyMovementType == EnemyMovementType.sineWave)
-        {
+    protected virtual void MoveEnemy(){
+        if (m_EnemyMovementType == EnemyMovementType.sineWave){
             m_Direction.x = -1f; //to move from right to left
             m_Direction.y = Mathf.Sin(Time.time * m_WaveAmplitude);
 
@@ -97,23 +86,20 @@ public class BaseEnemyBehavior : NetworkBehaviour, IDamagable
         transform.Translate(m_Direction * m_EnemySpeed * Time.deltaTime);
     }
 
-    protected EnemyMovementType GetRandomEnemyMovementType()
-    {
-        int randomValue = Random.Range(0, (int)EnemyMovementType.COUNT);
+    protected EnemyMovementType GetRandomEnemyMovementType(){
+        var randomValue = Random.Range(0, (int)EnemyMovementType.COUNT);
 
         return (EnemyMovementType)randomValue;
     }
 
-    protected void DespawnEnemy()
-    {
+    protected void DespawnEnemy(){
         gameObject.SetActive(false);
 
         NetworkObjectDespawner.DespawnNetworkObject(NetworkObject);
     }
 
 
-    public virtual void Hit(int damage)
-    {
+    public virtual void Hit(int damage){
         if (!IsServer)
             return;
 
@@ -123,13 +109,11 @@ public class BaseEnemyBehavior : NetworkBehaviour, IDamagable
         StartCoroutine(HitEffect());
     }
 
-    public IEnumerator HitEffect()
-    {
-        bool active = false;
-        float timer = 0f;
+    public IEnumerator HitEffect(){
+        var active = false;
+        var timer = 0f;
 
-        while (timer < m_hitEffectDuration)
-        {
+        while (timer < m_hitEffectDuration){
             active = !active;
             m_sprite.material.SetInt("_Hit", active ? 1 : 0);
             yield return new WaitForEndOfFrame();

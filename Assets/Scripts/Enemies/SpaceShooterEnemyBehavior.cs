@@ -1,8 +1,7 @@
 using Unity.Netcode;
 using UnityEngine;
 
-public class SpaceShooterEnemyBehavior : BaseEnemyBehavior
-{
+public class SpaceShooterEnemyBehavior : BaseEnemyBehavior{
     [SerializeField]
     public GameObject m_EnemyBulletPrefab;
 
@@ -15,58 +14,49 @@ public class SpaceShooterEnemyBehavior : BaseEnemyBehavior
 
     private float m_CurrentCooldownTime = 0f;
 
-    public override void OnNetworkSpawn()
-    {
+    override public void OnNetworkSpawn(){
         if (IsServer)
             m_EnemyHealthPoints.OnValueChanged += OnEnemyHealthPointsChange;
 
         base.OnNetworkSpawn();
     }
 
-    private void OnDisable()
-    {
+    private void OnDisable(){
         if (IsServer)
             m_EnemyHealthPoints.OnValueChanged -= OnEnemyHealthPointsChange;
     }
 
     // Update is called once per frame
-    protected override void Update()
-    {
-        if (IsServer)
-        {
+    protected override void Update(){
+        if (IsServer){
             base.Update();
         }
     }
 
-    protected override void UpdateActive()
-    {
+    protected override void UpdateActive(){
         MoveEnemy();
 
         m_CurrentCooldownTime += Time.deltaTime;
-        if (m_CurrentCooldownTime >= m_ShootingCooldown.Value)
-        {
+        if (m_CurrentCooldownTime >= m_ShootingCooldown.Value){
             m_CurrentCooldownTime = 0f;
             ShootLaserServerRpc();
         }
     }
 
-    protected override void UpdateDefeatedAnimation()
-    {
-        PowerUpSpawnController.instance.OnPowerUpSpawn(transform.position);
+    protected override void UpdateDefeatedAnimation(){
+        PowerUpSpawnController.Instance.OnPowerUpSpawn(transform.position);
         NetworkObjectSpawner.SpawnNewNetworkObject(m_VfxExplosion, transform.position);
 
         m_EnemyState.Value = EnemyState.defeated;
     }
 
     [ServerRpc]
-    private void ShootLaserServerRpc()
-    {
+    private void ShootLaserServerRpc(){
         var newEnemyLaser = NetworkObjectSpawner.SpawnNewNetworkObject(m_EnemyBulletPrefab);
         PlayShootAudioClientRpc();
 
         var bulletController = newEnemyLaser.GetComponent<BulletController>();
-        if (bulletController != null)
-        {
+        if (bulletController != null){
             bulletController.m_Owner = gameObject;
         }
 
@@ -74,21 +64,18 @@ public class SpaceShooterEnemyBehavior : BaseEnemyBehavior
     }
 
     [ClientRpc]
-    private void PlayShootAudioClientRpc()
-    {
+    private void PlayShootAudioClientRpc(){
         AudioManager.Instance.PlaySoundEffect(m_shootClip);
     }
 
-    private void OnTriggerEnter2D(Collider2D otherObject)
-    {
+    private void OnTriggerEnter2D(Collider2D otherObject){
         // Only react to trigger on the server
         if (!IsServer)
             return;
 
         // check if it's collided with a player spaceship
         var spacheshipController = otherObject.gameObject.GetComponent<PlayerShipController>();
-        if (spacheshipController != null)
-        {
+        if (spacheshipController != null){
             // tell the spaceship that it's taken damage
             spacheshipController.Hit(1);
 
@@ -98,18 +85,15 @@ public class SpaceShooterEnemyBehavior : BaseEnemyBehavior
 
         // check if it's collided with a player's bullet
         var shipBulletBehavior = otherObject.gameObject.GetComponent<BulletController>();
-        if (shipBulletBehavior != null && shipBulletBehavior.m_Owner != this.gameObject)
-        {
+        if (shipBulletBehavior != null && shipBulletBehavior.m_Owner != this.gameObject){
             // if so, take one health point away from enemy
             m_EnemyHealthPoints.Value -= 1;
         }
     }
 
-    private void OnEnemyHealthPointsChange(int oldHP, int newHP)
-    {
+    private void OnEnemyHealthPointsChange(int oldHP, int newHP){
         // if enemy's health is 0, then time to start enemy dead animation
-        if (newHP <= 0)
-        {
+        if (newHP <= 0){
             m_EnemyState.Value = EnemyState.defeatAnimation;
         }
     }

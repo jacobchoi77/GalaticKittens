@@ -1,36 +1,26 @@
 using TMPro;
 using UnityEngine;
 
-public class PlayerShipScore : MonoBehaviour
-{
-    [SerializeField]
-    GameObject m_vfxSmoke;
+public class PlayerShipScore : MonoBehaviour{
+    [SerializeField] private GameObject m_vfxSmoke;
 
-    [SerializeField]
-    GameObject m_vfxJet;
+    [SerializeField] private GameObject m_vfxJet;
 
-    [SerializeField]
-    TextMeshPro m_scoreText;
+    [SerializeField] private TextMeshPro m_scoreText;
 
-    [SerializeField]
-    TextMeshPro m_enemiesDestroyedText;
-    
-    [SerializeField]
-    TextMeshPro m_powerUpsUsedText;
+    [SerializeField] private TextMeshPro m_enemiesDestroyedText;
 
-    [SerializeField]
-    GameObject m_ship;
+    [SerializeField] private TextMeshPro m_powerUpsUsedText;
 
-    [SerializeField]
-    GameObject m_crown;
+    [SerializeField] private GameObject m_ship;
 
-    [SerializeField]
-    AnimationCurve m_moveCurve;
+    [SerializeField] private GameObject m_crown;
 
-    float m_curveDeltaTime;
+    [SerializeField] private AnimationCurve m_moveCurve;
 
-    void Update()
-    {
+    private float m_curveDeltaTime;
+
+    private void Update(){
         // Move the ship on an curve movement
         Vector2 currentPosition = m_ship.transform.localPosition;
         m_curveDeltaTime += Time.deltaTime;
@@ -38,8 +28,7 @@ public class PlayerShipScore : MonoBehaviour
         m_ship.transform.localPosition = currentPosition;
     }
 
-    public void SetShip(bool victory, int enemiesDestroyed, int powerUpsUsed, int score)
-    {
+    public void SetShip(bool victory, int enemiesDestroyed, int powerUpsUsed, int score){
         // Set vfx depending on the scene we are loading 
         m_vfxSmoke.SetActive(!victory);
         m_vfxJet.SetActive(victory);
@@ -51,8 +40,7 @@ public class PlayerShipScore : MonoBehaviour
     }
 
     // Turn on the crown because I'm the best ship
-    public void BestShip()
-    {
+    public void BestShip(){
         m_crown.SetActive(true);
     }
 }

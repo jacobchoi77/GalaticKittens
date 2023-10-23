@@ -3,48 +3,38 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
-public class BossDeathState : BaseBossState
-{
-    [SerializeField]
-    int m_maxNumberOfExplosions;
+public class BossDeathState : BaseBossState{
+    [SerializeField] private int m_maxNumberOfExplosions;
 
-    [SerializeField]
-    float m_explosionDuration;
+    [SerializeField] private float m_explosionDuration;
 
-    [SerializeField]
-    Transform m_explosionPositionsContainer;
+    [SerializeField] private Transform m_explosionPositionsContainer;
 
-    [SerializeField]
-    GameObject m_explosionVfx;
+    [SerializeField] private GameObject m_explosionVfx;
 
     [SerializeField]
     [Range(1f, 40f)]
-    float m_shakeSpeed;
+    private float m_shakeSpeed;
 
     [SerializeField]
     [Range(0.1f, 2f)]
-    float m_shakeAmount;
+    private float m_shakeAmount;
 
-    List<Transform> explosionPositions = new List<Transform>();
+    private List<Transform> explosionPositions = new List<Transform>();
 
-    void Start()
-    {
-        if (IsServer)
-        {
+    private void Start(){
+        if (IsServer){
             // Add the explosions Positions 
-            foreach (Transform transform in m_explosionPositionsContainer)
-            {
+            foreach (Transform transform in m_explosionPositionsContainer){
                 explosionPositions.Add(transform);
             }
         }
     }
 
-    IEnumerator Shake()
-    {
-        float currentPositionx = transform.position.x;
-        while (true)
-        {
-            float shakeValue = Mathf.Sin(Time.time * m_shakeSpeed) * m_shakeAmount;
+    private IEnumerator Shake(){
+        var currentPositionx = transform.position.x;
+        while (true){
+            var shakeValue = Mathf.Sin(Time.time * m_shakeSpeed) * m_shakeAmount;
 
             transform.position = new Vector2(currentPositionx + shakeValue, transform.position.y);
 
@@ -52,16 +42,14 @@ public class BossDeathState : BaseBossState
         }
     }
 
-    IEnumerator RunDeath()
-    {
+    private IEnumerator RunDeath(){
         // Show various explosion vfx for some seconds
-        int numberOfExplosions = 0;
-        float stepDuration = m_explosionDuration / m_maxNumberOfExplosions;
+        var numberOfExplosions = 0;
+        var stepDuration = m_explosionDuration / m_maxNumberOfExplosions;
 
         StartCoroutine(Shake());
-        while (numberOfExplosions < m_maxNumberOfExplosions)
-        {
-            Vector3 randPosition = explosionPositions[Random.Range(0, explosionPositions.Count)].position;
+        while (numberOfExplosions < m_maxNumberOfExplosions){
+            var randPosition = explosionPositions[Random.Range(0, explosionPositions.Count)].position;
 
             NetworkObjectSpawner.SpawnNewNetworkObject(m_explosionVfx, randPosition);
 
@@ -77,8 +65,7 @@ public class BossDeathState : BaseBossState
         NetworkObjectDespawner.DespawnNetworkObject(NetworkObject);
     }
 
-    public override void RunState()
-    {
+    override public void RunState(){
         StartCoroutine(RunDeath());
     }
 }

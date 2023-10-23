@@ -2,23 +2,18 @@ using UnityEngine;
 using UnityEngine.UI;
 
 [RequireComponent(typeof(Image))]
-public class OnUIButtonHover : MonoBehaviour
-{    
-    [SerializeField]
-    Sprite m_normalSprite;
+public class OnUIButtonHover : MonoBehaviour{
+    [SerializeField] private Sprite m_normalSprite;
 
-    [SerializeField]
-    Sprite m_hoverSprite;
+    [SerializeField] private Sprite m_hoverSprite;
 
-    Image buttonImageUI;
+    private Image buttonImageUI;
 
-    void Start()
-    {
+    private void Start(){
         buttonImageUI = GetComponent<Image>();
     }
 
-    public void OnHover(bool isHover)
-    {        
+    public void OnHover(bool isHover){
         buttonImageUI.sprite = isHover ? m_hoverSprite : m_normalSprite;
     }
 }

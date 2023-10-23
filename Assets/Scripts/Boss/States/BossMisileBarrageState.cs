@@ -1,23 +1,18 @@
 using System.Collections;
 using UnityEngine;
 
-public class BossMisileBarrageState : BaseBossState
-{
-    [SerializeField]
-    Transform[] m_misileSpawningArea;
+public class BossMisileBarrageState : BaseBossState{
+    [SerializeField] private Transform[] m_misileSpawningArea;
 
-    [SerializeField]
-    GameObject m_misilePrefab;
+    [SerializeField] private GameObject m_misilePrefab;
 
     [SerializeField]
     [Range(0f, 1f)]
-    float m_misileDelayBetweenSpawns;
-    
-    IEnumerator RunMisileBarrageState()
-    {
+    private float m_misileDelayBetweenSpawns;
+
+    private IEnumerator RunMisileBarrageState(){
         // Spawn the missiles
-        foreach (Transform spawnPosition in m_misileSpawningArea)
-        {
+        foreach (var spawnPosition in m_misileSpawningArea){
             FireMisiles(spawnPosition.position);
             yield return new WaitForSeconds(m_misileDelayBetweenSpawns);
         }
@@ -27,8 +22,7 @@ public class BossMisileBarrageState : BaseBossState
     }
 
     // Spawn the missile prefab
-    void FireMisiles(Vector3 position)
-    {
+    private void FireMisiles(Vector3 position){
         NetworkObjectSpawner.SpawnNewNetworkObject(
             m_misilePrefab,
             position,
@@ -36,8 +30,7 @@ public class BossMisileBarrageState : BaseBossState
     }
 
     // Run state
-    public override void RunState()
-    {
+    override public void RunState(){
         StartCoroutine(RunMisileBarrageState());
     }
 }

@@ -1,55 +1,42 @@
 using Unity.Netcode;
 using UnityEngine;
 
-public class BulletController : NetworkBehaviour
-{
-    private enum BulletOwner
-    {
-        enemy,
-        player
-    };
+public class BulletController : NetworkBehaviour{
+    private enum BulletOwner{
+        Enemy,
+        Player
+    }
 
     public int damage = 1;
 
     [HideInInspector]
     public CharacterDataSO characterData;
-    
+
     [SerializeField]
     private BulletOwner m_owner;
 
-    [HideInInspector]
-    public GameObject m_Owner { get; set; } = null;
+    public GameObject m_Owner{ get; set; }
 
-    private void Start()
-    {
-        if (m_owner == BulletOwner.player && IsServer)
-        {
+    private void Start(){
+        if (m_owner == BulletOwner.Player && IsServer){
             ChangeBulletColorClientRpc(characterData.color);
         }
     }
 
-    private void OnTriggerEnter2D(Collider2D collider)
-    {
-        if (!IsServer)
-            return;
-
-        if (collider.TryGetComponent(out IDamagable damagable))
-        {
-            if (m_owner == BulletOwner.player)
-            {
+    private void OnTriggerEnter2D(Collider2D collider){
+        if (!IsServer) return;
+        if (collider.TryGetComponent(out IDamagable damageable)){
+            if (m_owner == BulletOwner.Player){
                 // For the final score
                 characterData.enemiesDestroyed++;
             }
-
-            damagable.Hit(damage);
-            
+            damageable.Hit(damage);
             NetworkObjectDespawner.DespawnNetworkObject(NetworkObject);
         }
     }
 
     [ClientRpc]
-    private void ChangeBulletColorClientRpc(Color newColor)
-    {
+    private void ChangeBulletColorClientRpc(Color newColor){
         GetComponent<SpriteRenderer>().color = newColor;
     }
 }

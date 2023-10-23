@@ -1,10 +1,8 @@
 using System.Collections;
 using UnityEngine;
 
-public class AudioManager : SingletonPersistent<AudioManager>
-{
-    public enum MusicName
-    {
+public class AudioManager : SingletonPersistent<AudioManager>{
+    public enum MusicName{
         intro,
         gameplay
     };
@@ -26,22 +24,18 @@ public class AudioManager : SingletonPersistent<AudioManager>
 
     private readonly float k_volumeSteps = 0.01f;
 
-    private void Start()
-    {
+    private void Start(){
         // We know that the menu scene if the first to use this script
         PlayMusic(MusicName.intro);
     }
-   
-    public void PlaySoundEffect(AudioClip clip, float volume = 1f)
-    {
+
+    public void PlaySoundEffect(AudioClip clip, float volume = 1f){
         m_sfxSource.PlayOneShot(clip, volume);
     }
 
     // Play the music of the game without any effect
-    public void PlayMusic(MusicName musicToPlay)
-    {
-        if (musicToPlay == MusicName.intro)
-        {
+    public void PlayMusic(MusicName musicToPlay){
+        if (musicToPlay == MusicName.intro){
             m_introSource.enabled = true;
             m_introSource.volume = m_maxMusicVolume;
             m_introSource.Play();
@@ -49,8 +43,7 @@ public class AudioManager : SingletonPersistent<AudioManager>
             m_gameplaySource.Stop();
             m_gameplaySource.enabled = false;
         }
-        else
-        {
+        else{
             m_gameplaySource.enabled = true;
             m_gameplaySource.volume = m_maxMusicVolume;
             m_gameplaySource.Play();
@@ -60,8 +53,7 @@ public class AudioManager : SingletonPersistent<AudioManager>
         }
     }
 
-    public void SwitchToGameplayMusic()
-    {        
+    public void SwitchToGameplayMusic(){
         m_gameplaySource.volume = 0f;
         m_gameplaySource.enabled = true;
         m_gameplaySource.Play();
@@ -69,27 +61,22 @@ public class AudioManager : SingletonPersistent<AudioManager>
         StartCoroutine(SwitchMusicToPlay(MusicName.gameplay));
     }
 
-    private IEnumerator SwitchMusicToPlay(MusicName musicToPlay)
-    {
+    private IEnumerator SwitchMusicToPlay(MusicName musicToPlay){
         yield return FadeInMusicToPlayFadeOutCurrentMusic(musicToPlay);
 
         StopAudioOfCurrentMusic(musicToPlay);
     }
 
-    private IEnumerator FadeInMusicToPlayFadeOutCurrentMusic(MusicName musicToPlay)
-    {
-        float volume = 0f;
+    private IEnumerator FadeInMusicToPlayFadeOutCurrentMusic(MusicName musicToPlay){
+        var volume = 0f;
 
         // Repeat until the volume go up to the max
-        while (volume <= m_maxMusicVolume)
-        {
-            if (musicToPlay == MusicName.intro)
-            {
+        while (volume <= m_maxMusicVolume){
+            if (musicToPlay == MusicName.intro){
                 m_introSource.volume += k_volumeSteps;
                 m_gameplaySource.volume -= k_volumeSteps;
             }
-            else
-            {
+            else{
                 m_introSource.volume -= k_volumeSteps;
                 m_gameplaySource.volume += k_volumeSteps;
             }
@@ -98,15 +85,12 @@ public class AudioManager : SingletonPersistent<AudioManager>
         }
     }
 
-    private void StopAudioOfCurrentMusic(MusicName musicToPlay)
-    {
-        if (musicToPlay == MusicName.intro)
-        {
+    private void StopAudioOfCurrentMusic(MusicName musicToPlay){
+        if (musicToPlay == MusicName.intro){
             m_gameplaySource.Stop();
             m_gameplaySource.enabled = false;
         }
-        else
-        {
+        else{
             m_introSource.Stop();
             m_introSource.enabled = false;
         }

@@ -1,19 +1,15 @@
 using System.Collections;
 using UnityEngine;
 
-public class BossSuperLaserState : BaseBossState
-{
-    [SerializeField]
-    GameObject m_superLaserPrefab;
+public class BossSuperLaserState : BaseBossState{
+    [SerializeField] private GameObject m_superLaserPrefab;
 
-    [SerializeField]
-    Transform m_superLaserPosition;
-    
-    IEnumerator FireSuperLaser()
-    {
-        float randomRotation = Random.Range(-40f, 10f);
+    [SerializeField] private Transform m_superLaserPosition;
 
-        GameObject superLaser = NetworkObjectSpawner.SpawnNewNetworkObject(
+    private IEnumerator FireSuperLaser(){
+        var randomRotation = Random.Range(-40f, 10f);
+
+        var superLaser = NetworkObjectSpawner.SpawnNewNetworkObject(
             m_superLaserPrefab,
             m_superLaserPosition.localPosition,
             Quaternion.Euler(0f, 0f, randomRotation)
@@ -23,15 +19,13 @@ public class BossSuperLaserState : BaseBossState
         yield return new WaitForSeconds(5f);
         m_controller.SetState(BossState.idle);
     }
-        
-    public override void RunState()
-    {
+
+    override public void RunState(){
         StartCoroutine(FireSuperLaser());
     }
 
-    public override void StopState()
-    {
+    override public void StopState(){
         StopCoroutine(FireSuperLaser());
-    }  
+    }
 
 }

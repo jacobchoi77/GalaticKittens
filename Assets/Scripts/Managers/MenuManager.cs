@@ -1,10 +1,8 @@
 using Unity.Netcode;
-
 using UnityEngine;
 using System.Collections;
 
-public class MenuManager : MonoBehaviour
-{
+public class MenuManager : MonoBehaviour{
     [SerializeField]
     private Animator m_menuAnimator;
 
@@ -20,8 +18,7 @@ public class MenuManager : MonoBehaviour
     [SerializeField]
     private SceneName nextScene = SceneName.CharacterSelection;
 
-    private IEnumerator Start()
-    {
+    private IEnumerator Start(){
         // -- To test with latency on development builds --
         // To set the latency, jitter and packet-loss percentage values for develop builds we need
         // the following code to execute before NetworkManager attempts to connect (changing the
@@ -50,12 +47,9 @@ public class MenuManager : MonoBehaviour
         LoadingSceneManager.Instance.Init();
     }
 
-    private void Update()
-    {
-        if (m_pressAnyKeyActive)
-        {
-            if (Input.anyKey)
-            {
+    private void Update(){
+        if (m_pressAnyKeyActive){
+            if (Input.anyKey){
                 TriggerMainMenuTransitionAnimation();
 
                 m_pressAnyKeyActive = false;
@@ -63,44 +57,37 @@ public class MenuManager : MonoBehaviour
         }
     }
 
-    public void OnClickHost()
-    {
+    public void OnClickHost(){
         NetworkManager.Singleton.StartHost();
         AudioManager.Instance.PlaySoundEffect(m_confirmClip);
         LoadingSceneManager.Instance.LoadScene(nextScene);
     }
 
-    public void OnClickJoin()
-    {
+    public void OnClickJoin(){
         AudioManager.Instance.PlaySoundEffect(m_confirmClip);
         StartCoroutine(Join());
     }
 
-    public void OnClickQuit()
-    {
+    public void OnClickQuit(){
         AudioManager.Instance.PlaySoundEffect(m_confirmClip);
         Application.Quit();
     }
 
-    private void ClearAllCharacterData()
-    {
+    private void ClearAllCharacterData(){
         // Clean the all the data of the characters so we can start with a clean slate
-        foreach (CharacterDataSO data in m_characterDatas)
-        {
+        foreach (var data in m_characterDatas){
             data.EmptyData();
         }
     }
 
-    private void TriggerMainMenuTransitionAnimation()
-    {
+    private void TriggerMainMenuTransitionAnimation(){
         m_menuAnimator.SetTrigger(k_enterMenuTriggerAnim);
         AudioManager.Instance.PlaySoundEffect(m_confirmClip);
     }
 
     // We use a coroutine because the server is the one who makes the load
     // we need to make a fade first before calling the start client
-    private IEnumerator Join()
-    {
+    private IEnumerator Join(){
         LoadingFadeEffect.Instance.FadeAll();
 
         yield return new WaitUntil(() => LoadingFadeEffect.s_canLoad);

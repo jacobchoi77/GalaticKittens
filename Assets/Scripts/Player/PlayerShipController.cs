@@ -2,73 +2,46 @@ using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
 
-public class PlayerShipController : NetworkBehaviour, IDamagable
-{
-    public NetworkVariable<int> health = new NetworkVariable<int>();
-
-    [SerializeField]
-    int m_maxSpecialPower;
-
-    [SerializeField]
-    DefenseMatrix m_defenseShield;
-
-    [SerializeField]
-    CharacterDataSO m_characterData;
-
-    [SerializeField]
-    GameObject m_explosionVfxPrefab;
-
-    [SerializeField]
-    float m_hitEffectDuration;
+public class PlayerShipController : NetworkBehaviour, IDamagable{
+    [SerializeField] private int m_maxSpecialPower;
+    [SerializeField] private DefenseMatrix m_defenseShield;
+    [SerializeField] private CharacterDataSO m_characterData;
+    [SerializeField] private GameObject m_explosionVfxPrefab;
+    [SerializeField] private float m_hitEffectDuration;
 
     [Header("AudioClips")]
-    [SerializeField]
-    AudioClip m_hitClip;
-
-    [SerializeField]
-    AudioClip m_shieldClip;
+    [SerializeField] private AudioClip m_hitClip;
+    [SerializeField] private AudioClip m_shieldClip;
 
     [Header("ShipSprites")]
-    [SerializeField]
-    SpriteRenderer m_shipRenderer;
+    [SerializeField] private SpriteRenderer m_shipRenderer;
 
     [Header("Runtime set")]
-    [HideInInspector]
-    public PlayerUI playerUI;
+    [HideInInspector] public PlayerUI playerUI;
+    [HideInInspector] public CharacterDataSO characterData;
+    [HideInInspector] public GameplayManager gameplayManager;
 
-    [HideInInspector]
-    public CharacterDataSO characterData;
+    public NetworkVariable<int> health = new NetworkVariable<int>();
+    private NetworkVariable<int> m_specials = new NetworkVariable<int>(0);
+    private bool m_isPlayerDefeated;
+    private const string k_hitEffect = "_Hit";
 
-    [HideInInspector]
-    public GameplayManager gameplayManager;
-
-    NetworkVariable<int> m_specials = new NetworkVariable<int>(0);
-
-    bool m_isPlayerDefeated;
-
-    const string k_hitEffect = "_Hit";
-
-    void Update()
-    {
-        if (IsOwner)
-        {
+    private void Update(){
+        if (IsOwner){
             if (!m_defenseShield.isShieldActive &&
-                (Input.GetKeyDown(KeyCode.K) || Input.GetKeyDown(KeyCode.LeftShift)))
-            {
+                (Input.GetKeyDown(KeyCode.K) || Input.GetKeyDown(KeyCode.LeftShift))){
                 // Tell the server to activate the shield
                 ActivateShieldServerRpc();
             }
 
-            if (Input.GetKeyDown(KeyCode.Escape))
-            {
+            if (Input.GetKeyDown(KeyCode.Escape)){
                 // Exit the network state and return to the menu
                 if (IsServer) // Host
                 {
                     // All player should shutdown and exit
                     StartCoroutine(HostShutdown());
                 }
-                else
-                {
+                else{
                     Shutdown();
                 }
             }
@@ -76,11 +49,9 @@ public class PlayerShipController : NetworkBehaviour, IDamagable
     }
 
     [ServerRpc]
-    void ActivateShieldServerRpc()
-    {
+    private void ActivateShieldServerRpc(){
         // Activate the special in case the ship has available
-        if (m_specials.Value > 0)
-        {
+        if (m_specials.Value > 0){
             // Tell the UI to remove the icon
             playerUI.UpdatePowerUp(m_specials.Value, false);
 
@@ -96,8 +67,7 @@ public class PlayerShipController : NetworkBehaviour, IDamagable
     }
 
     [ClientRpc]
-    void ActivateShieldClientRpc()
-    {
+    private void ActivateShieldClientRpc(){
         // Activate the shield
         m_defenseShield.TurnOnShield();
 
@@ -105,15 +75,13 @@ public class PlayerShipController : NetworkBehaviour, IDamagable
     }
 
     [ClientRpc]
-    void PlayShipHitSoundClientRpc(ulong clientId)
-    {
+    private void PlayShipHitSoundClientRpc(ulong clientId){
         // Reproduce the sfx hit only on the client instance
         if (NetworkObject.OwnerClientId == clientId)
             AudioManager.Instance?.PlaySoundEffect(m_hitClip);
     }
 
-    IEnumerator HostShutdown()
-    {
+    private IEnumerator HostShutdown(){
         // Tell the clients to shutdown
         ShutdownClientRpc();
 
@@ -125,32 +93,27 @@ public class PlayerShipController : NetworkBehaviour, IDamagable
     }
 
     // Shutdown the network session and load the menu scene
-    void Shutdown()
-    {
+    private void Shutdown(){
         NetworkManager.Singleton.Shutdown();
         LoadingSceneManager.Instance.LoadScene(SceneName.Menu, false);
     }
 
     [ClientRpc]
-    void ShutdownClientRpc()
-    {
+    private void ShutdownClientRpc(){
         if (IsServer)
             return;
 
         Shutdown();
     }
 
-    void OnTriggerEnter2D(Collider2D collider)
-    {
+    private void OnTriggerEnter2D(Collider2D collider){
         if (!IsServer)
             return;
-        
+
         // If the collider hit a power-up
-        if (collider.gameObject.CompareTag("PowerUpSpecial"))
-        {
+        if (collider.gameObject.CompareTag("PowerUpSpecial")){
             // Check if I have space to take the special
-            if (m_specials.Value < m_maxSpecialPower)
-            {
+            if (m_specials.Value < m_maxSpecialPower){
                 // Update var
                 m_specials.Value++;
 
@@ -166,15 +129,13 @@ public class PlayerShipController : NetworkBehaviour, IDamagable
 
     // Sync the hit effect to all clients
     [ClientRpc]
-    void HitClientRpc()
-    {
+    private void HitClientRpc(){
         // Hit effect sync
         StopCoroutine(HitEffect());
         StartCoroutine(HitEffect());
     }
 
-    public void Hit(int damage)
-    {
+    public void Hit(int damage){
         if (!IsServer || m_isPlayerDefeated)
             return;
 
@@ -187,8 +148,7 @@ public class PlayerShipController : NetworkBehaviour, IDamagable
         // Sync on client
         HitClientRpc();
 
-        if (health.Value > 0)
-        {
+        if (health.Value > 0){
             PlayShipHitSoundClientRpc(NetworkObject.OwnerClientId);
         }
         else // (health.Value <= 0)
@@ -204,19 +164,17 @@ public class PlayerShipController : NetworkBehaviour, IDamagable
 
             // Tell the Gameplay manager that I've been defeated
             gameplayManager.PlayerDeath(m_characterData.clientId);
-            
+
             NetworkObjectDespawner.DespawnNetworkObject(NetworkObject);
         }
     }
 
     // Set the hit animation effect
-    public IEnumerator HitEffect()
-    {
-        bool active = false;
-        float timer = 0f;
+    public IEnumerator HitEffect(){
+        var active = false;
+        var timer = 0f;
 
-        while (timer < m_hitEffectDuration)
-        {
+        while (timer < m_hitEffectDuration){
             active = !active;
             m_shipRenderer.material.SetInt(k_hitEffect, active ? 1 : 0);
             yield return new WaitForEndOfFrame();

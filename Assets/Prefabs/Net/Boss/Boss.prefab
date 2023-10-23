@@ -221,6 +221,7 @@ GameObject:
   - component: {fileID: 1545438727490091047}
   - component: {fileID: 1545438727490091046}
   - component: {fileID: 1545438727490091045}
+  - component: {fileID: 8961208106210861817}
   - component: {fileID: 9123702397430231113}
   - component: {fileID: 5407547176905804477}
   - component: {fileID: 1545438727490091044}
@@ -229,7 +230,6 @@ GameObject:
   - component: {fileID: 4527139208110982274}
   - component: {fileID: 7165305942998451001}
   - component: {fileID: 3699086121965257401}
-  - component: {fileID: 8961208106210861817}
   m_Layer: 0
   m_Name: Boss
   m_TagString: Enemy
@@ -351,9 +351,21 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 4.7347684, y: 4.482834}
   m_EdgeRadius: 0
+--- !u!114 &8961208106210861817
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1545438727490091040}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 80d7c879794dfda4687da0e400131852, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!95 &9123702397430231113
 Animator:
-  serializedVersion: 4
+  serializedVersion: 5
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -370,7 +382,8 @@ Animator:
   m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorControllerStateOnDisable: 0
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!114 &5407547176905804477
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -383,6 +396,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e8d0727d5ae3244e3b569694d3912374, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  TransitionStateInfoList: []
   m_Animator: {fileID: 9123702397430231113}
 --- !u!114 &1545438727490091044
 MonoBehaviour:
@@ -403,7 +417,7 @@ MonoBehaviour:
   m_idleState: {fileID: 7165305942998451001}
   m_deathState: {fileID: 8978816546781610908}
   m_isTesting: 0
-  m_testState: 5
+  m_testState: 0
 --- !u!114 &8054122635934986458
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -484,18 +498,6 @@ MonoBehaviour:
   - {fileID: 1545438727913685152}
   m_misilePrefab: {fileID: 7446514033910554141, guid: 7718440e32922dc42b59ab42f2ebe5ae, type: 3}
   m_misileDelayBetweenSpawns: 0
---- !u!114 &8961208106210861817
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1545438727490091040}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 80d7c879794dfda4687da0e400131852, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &1545438727840920832
 GameObject:
   m_ObjectHideFlags: 0
