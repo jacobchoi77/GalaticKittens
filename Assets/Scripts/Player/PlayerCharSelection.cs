@@ -1,22 +1,17 @@
+using System;
 using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
 
 public class PlayerCharSelection : NetworkBehaviour{
-    public int CharSelected => m_charSelected.Value;
+
+    [SerializeField] private NetworkVariable<int> m_charSelected = new NetworkVariable<int>(k_noCharacterSelectedValue);
+    [SerializeField] private NetworkVariable<int> m_playerId = new NetworkVariable<int>(k_noCharacterSelectedValue);
+    [SerializeField] private AudioClip _changedCharacterClip;
 
     private const int k_noCharacterSelectedValue = -1;
 
-    [SerializeField]
-    private NetworkVariable<int> m_charSelected =
-        new NetworkVariable<int>(k_noCharacterSelectedValue);
-
-    [SerializeField]
-    private NetworkVariable<int> m_playerId =
-        new NetworkVariable<int>(k_noCharacterSelectedValue);
-
-    [SerializeField]
-    private AudioClip _changedCharacterClip;
+    public int CharSelected => m_charSelected.Value;
 
     private void Start(){
         if (IsServer){
@@ -64,7 +59,7 @@ public class PlayerCharSelection : NetworkBehaviour{
     }
 
     private void Update(){
-        if (IsOwner && CharacterSelectionManager.Instance.GetConnectionState(m_playerId.Value) != ConnectionState.ready){
+        if (IsOwner && CharacterSelectionManager.Instance.GetConnectionState(m_playerId.Value) != ConnectionState.Ready){
             if (Input.GetKeyDown(KeyCode.A)){
                 ChangeCharacterSelection(-1);
                 AudioManager.Instance.PlaySoundEffect(_changedCharacterClip);
@@ -167,10 +162,7 @@ public class PlayerCharSelection : NetworkBehaviour{
 
     [ServerRpc]
     private void ReadyServerRpc(){
-        CharacterSelectionManager.Instance.PlayerReady(
-            OwnerClientId,
-            m_playerId.Value,
-            m_charSelected.Value);
+        CharacterSelectionManager.Instance.PlayerReady(OwnerClientId, m_playerId.Value, m_charSelected.Value);
     }
 
     [ServerRpc]
@@ -184,21 +176,18 @@ public class PlayerCharSelection : NetworkBehaviour{
             return;
 
         switch (buttonAction){
-            case ButtonActions.lobby_ready:
-                CharacterSelectionManager.Instance.SetPlayerReadyUIButtons(
-                    true,
-                    m_charSelected.Value);
-
+            case ButtonActions.LobbyReady:
+                CharacterSelectionManager.Instance.SetPlayerReadyUIButtons(true, m_charSelected.Value);
                 ReadyServerRpc();
                 break;
 
-            case ButtonActions.lobby_not_ready:
-                CharacterSelectionManager.Instance.SetPlayerReadyUIButtons(
-                    false,
-                    m_charSelected.Value);
-
+            case ButtonActions.LobbyNotReady:
+                CharacterSelectionManager.Instance.SetPlayerReadyUIButtons(false, m_charSelected.Value);
                 NotReadyServerRpc();
                 break;
+
+            default:
+                throw new ArgumentOutOfRangeException(nameof(buttonAction), buttonAction, null);
         }
     }
 

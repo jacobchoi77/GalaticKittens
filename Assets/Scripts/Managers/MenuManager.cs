@@ -87,7 +87,7 @@ public class MenuManager : MonoBehaviour{
 
     // We use a coroutine because the server is the one who makes the load
     // we need to make a fade first before calling the start client
-    private IEnumerator Join(){
+    private static IEnumerator Join(){
         LoadingFadeEffect.Instance.FadeAll();
 
         yield return new WaitUntil(() => LoadingFadeEffect.s_canLoad);

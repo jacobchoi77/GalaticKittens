@@ -7,34 +7,23 @@ using UnityEngine;
 public class GameplayManager : SingletonNetwork<GameplayManager>{
     public static Action<ulong> OnPlayerDefeated;
 
-    [SerializeField]
-    private CharacterDataSO[] m_charactersData;
-
-    [SerializeField]
-    private PlayerUI[] m_playersUI;
-
-    [SerializeField]
-    private GameObject m_deathUI;
-
-    [SerializeField]
-    private Transform[] m_shipStartingPositions;
+    [SerializeField] private CharacterDataSO[] m_charactersData;
+    [SerializeField] private PlayerUI[] m_playersUI;
+    [SerializeField] private GameObject m_deathUI;
+    [SerializeField] private Transform[] m_shipStartingPositions;
 
     private int m_numberOfPlayerConnected;
     private List<ulong> m_connectedClients = new List<ulong>();
     private List<PlayerShipController> m_playerShips = new List<PlayerShipController>();
 
     private void OnEnable(){
-        if (!IsServer)
-            return;
-
+        if (!IsServer) return;
         OnPlayerDefeated += PlayerDeath;
         NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnect;
     }
 
     private void OnDisable(){
-        if (!IsServer)
-            return;
-
+        if (!IsServer) return;
         OnPlayerDefeated -= PlayerDeath;
 
         // Since the NetworkManager could potentially be destroyed before this component, only
@@ -77,9 +66,7 @@ public class GameplayManager : SingletonNetwork<GameplayManager>{
 
     [ClientRpc]
     private void LoadClientRpc(){
-        if (IsServer)
-            return;
-
+        if (IsServer) return;
         LoadingFadeEffect.Instance.FadeAll();
     }
 

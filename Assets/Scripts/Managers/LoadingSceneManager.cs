@@ -13,10 +13,7 @@ public enum SceneName : byte{
     Gameplay,
     Victory,
     Defeat,
-    //.
-    //.
-    // Add more scenes states if needed
-};
+}
 
 public class LoadingSceneManager : SingletonPersistent<LoadingSceneManager>{
     public SceneName SceneActive => m_sceneActive;
@@ -60,11 +57,9 @@ public class LoadingSceneManager : SingletonPersistent<LoadingSceneManager>{
     // Load the scene using the regular SceneManager, use this if there's no active network session
     private void LoadSceneLocal(SceneName sceneToLoad){
         SceneManager.LoadScene(sceneToLoad.ToString());
-        switch (sceneToLoad){
-            case SceneName.Menu:
-                if (AudioManager.Instance != null)
-                    AudioManager.Instance.PlayMusic(AudioManager.MusicName.intro);
-                break;
+        if (sceneToLoad == SceneName.Menu){
+            if (AudioManager.Instance != null)
+                AudioManager.Instance.PlayMusic(AudioManager.MusicName.intro);
         }
     }
 
@@ -81,8 +76,7 @@ public class LoadingSceneManager : SingletonPersistent<LoadingSceneManager>{
     private void OnLoadComplete(ulong clientId, string sceneName, LoadSceneMode loadSceneMode){
         // We only care the host/server is loading because every manager handles
         // their information and behavior on the server runtime
-        if (!NetworkManager.Singleton.IsServer)
-            return;
+        if (!NetworkManager.Singleton.IsServer) return;
 
         Enum.TryParse(sceneName, out m_sceneActive);
 

@@ -1,12 +1,11 @@
+using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
 
 public class ClientConnection : SingletonNetwork<ClientConnection>{
-    [SerializeField]
-    private int m_maxConnections;
 
-    [SerializeField]
-    private CharacterDataSO[] m_characterDatas;
+    [SerializeField] private int m_maxConnections;
+    [SerializeField] private CharacterDataSO[] m_characterDatas;
 
     // This is a check for some script that depends on the client where it leaves
     // to check if this was a client that should no be allowed an there for the code should not run
@@ -16,9 +15,7 @@ public class ClientConnection : SingletonNetwork<ClientConnection>{
 
     // Check if a client can connect to the scene, this is call on every load of a scene.
     public bool CanClientConnect(ulong clientId){
-        if (!IsServer)
-            return false;
-
+        if (!IsServer) return false;
         // Check if the client can connect
         var canConnect = CanConnect(clientId);
         if (!canConnect){
@@ -44,16 +41,12 @@ public class ClientConnection : SingletonNetwork<ClientConnection>{
             print($"You are allowed to enter {clientId}");
             return true;
         }
-        else{
-            if (ItHasACharacterSelected(clientId)){
-                print($"You are allowed to enter {clientId}");
-                return true;
-            }
-            else{
-                print($"Sorry we are full {clientId}");
-                return false;
-            }
+        if (ItHasACharacterSelected(clientId)){
+            print($"You are allowed to enter {clientId}");
+            return true;
         }
+        print($"Sorry we are full {clientId}");
+        return false;
     }
 
     // In case the client is not allowed to enter, remove the client for the session
@@ -61,7 +54,7 @@ public class ClientConnection : SingletonNetwork<ClientConnection>{
         // Client should shutdown
         var clientRpcParams = new ClientRpcParams{
             Send = new ClientRpcSendParams{
-                TargetClientIds = new ulong[]{ clientId }
+                TargetClientIds = new[]{ clientId }
             }
         };
 
@@ -71,13 +64,7 @@ public class ClientConnection : SingletonNetwork<ClientConnection>{
 
     // Check if the client exist on the characters data
     private bool ItHasACharacterSelected(ulong clientId){
-        foreach (var data in m_characterDatas){
-            if (data.clientId == clientId){
-                return true;
-            }
-        }
-
-        return false;
+        return m_characterDatas.Any(data => data.clientId == clientId);
     }
 
     [ClientRpc]
@@ -85,7 +72,7 @@ public class ClientConnection : SingletonNetwork<ClientConnection>{
         Shutdown();
     }
 
-    private void Shutdown(){
+    private static void Shutdown(){
         NetworkManager.Singleton.Shutdown();
         LoadingSceneManager.Instance.LoadScene(SceneName.Menu, false);
     }

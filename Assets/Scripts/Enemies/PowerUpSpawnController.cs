@@ -6,8 +6,7 @@ public class PowerUpSpawnController : MonoBehaviour{
     public GameObject[] listOfPowerUps;
 
     [Tooltip("The probability (in %) that a power up gets spawned")]
-    [Range(0, 100)]
-    public int probabilityOfPowerUpSpawn;
+    [Range(0, 100)] public int probabilityOfPowerUpSpawn;
 
     private void Awake(){
         if (Instance == null){
@@ -25,9 +24,7 @@ public class PowerUpSpawnController : MonoBehaviour{
         var randomPick = Random.Range(1, 100);
         if (randomPick <= probabilityOfPowerUpSpawn){
             var nextPowerUpToSpawn = GetRandomPowerUp();
-
             var newSpawnedPowerup = NetworkObjectSpawner.SpawnNewNetworkObject(nextPowerUpToSpawn);
-
             newSpawnedPowerup.transform.position = positionToSpawn;
         }
     }
